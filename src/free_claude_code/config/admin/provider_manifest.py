@@ -190,6 +190,13 @@ _PROVIDER_FIELD_OVERRIDES: dict[str, ProviderFieldOverride] = {
             "mixed."
         ),
     },
+    "QWENCLOUD_PAYG_API_KEY": {
+        "label": "QwenCloud Pay-as-you-go API Keys",
+        "description": "QwenCloud API key from the same region as the base URL. Separate from Token Plan and Coding Plan keys.",
+    },
+    "QWENCLOUD_PAYG_BASE_URL": {
+        "description": "Regional OpenAI-compatible endpoint ending in /compatible-mode/v1. Defaults to Singapore; use the region where your API key was created.",
+    },
     "QWENCLOUD_CODING_API_KEY": {
         "label": "QwenCloud Coding Plan API Keys",
         "description": (
@@ -369,6 +376,23 @@ def provider_field_specs() -> tuple[ConfigFieldSpec, ...]:
         ),
         *_cloudflare_account_field_specs(),
         *_vertex_field_specs(),
+        ConfigFieldSpec(
+            key="GEMINI_CLI_PATH",
+            label="Gemini CLI Executable",
+            section_id="providers",
+            settings_attr="gemini_cli_path",
+            provider_ids=("gemini_cli",),
+            restart_required=True,
+            description="Optional path to Gemini CLI (or its dist/index.js). Google sign-in and subscription access stay inside the official CLI. Disconnecting FCC does not sign out the CLI.",
+        ),
+        ConfigFieldSpec(
+            key="QWENCLOUD_PAYG_MODELS",
+            label="QwenCloud API Models",
+            section_id="providers",
+            settings_attr="qwencloud_payg_models",
+            provider_ids=("qwencloud_api",),
+            description="Comma-separated model IDs available in your region. QwenCloud does not expose an OpenAI-compatible model-list endpoint; this list populates the model picker.",
+        ),
         *_base_url_field_specs(),
         *_proxy_field_specs(),
     )

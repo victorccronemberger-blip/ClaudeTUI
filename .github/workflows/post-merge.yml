@@ -22,7 +22,7 @@ concurrency:
 jobs:
   warm-dependency-cache:
     name: Warm dependency cache (${{ matrix.runner }})
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && vars.FCC_ENABLE_RELEASES == 'true'
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 15
     permissions:
@@ -83,7 +83,7 @@ jobs:
 
   publish:
     name: Publish to PyPI
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && vars.FCC_ENABLE_RELEASES == 'true'
     runs-on: macos-26
     timeout-minutes: 15
     environment: pypi

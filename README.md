@@ -113,6 +113,20 @@ Claude Code:
 fcc-claude
 ```
 
+`fcc-claude` starts in clean mode by default: a minimal coding prompt replaces
+Claude Code's default system prompt, `--safe-mode` skips automatically loaded hooks,
+plugins, memory and `CLAUDE.md` instructions, and command/file permission prompts
+are bypassed. It keeps the FCC gateway and its multi-provider `/model` picker.
+Explicit `--system-prompt`, `--system-prompt-file` and permission flags take
+precedence. Use a current Claude Code release supporting `--safe-mode` and
+`--system-prompt-snapshot`.
+
+Set `FCC_CLAUDE_CLEAN=0` before launching to use Claude Code's original defaults.
+Clean mode changes the local harness; model/provider refusals still come from
+the selected upstream service. The proxy preserves those responses as returned.
+Claude Code can still show its initial onboarding, workspace-trust and
+bypass-mode acknowledgement dialogs; these belong to the native client.
+
 Codex:
 
 ```bash
@@ -212,6 +226,7 @@ For another API endpoint, open **Providers → Custom providers → Add provider
 | [xAI (Grok)](https://console.x.ai/team/default/api-keys) | `XAI_API_KEY` | `xai/grok-4.5` |
 | [Alibaba Cloud](https://www.alibabacloud.com/help/en/model-studio/get-api-key) | `ALIBABA_CLOUD_API_KEY` | `alibaba_cloud/<model-id>` |
 | [QwenCloud Token Plan](https://home.qwencloud.com/api-keys) | `QWENCLOUD_API_KEY` | `qwencloud/qwen3.7-plus` |
+| [QwenCloud API](https://home.qwencloud.com/api-keys) | `QWENCLOUD_PAYG_API_KEY` | `qwencloud_api/qwen3.7-plus` |
 | [QwenCloud Coding Plan](https://home.qwencloud.com/api-keys) | `QWENCLOUD_CODING_API_KEY` | `qwencloud_coding/qwen3.7-plus` |
 | [Together AI](https://api.together.ai/settings/api-keys) | `TOGETHER_API_KEY` | `together/zai-org/GLM-5.2` |
 | [DeepInfra](https://deepinfra.com/dash/api_keys) | `DEEPINFRA_API_KEY` | `deepinfra/deepseek-ai/DeepSeek-V4-Flash` |
@@ -272,6 +287,24 @@ For another API endpoint, open **Providers → Custom providers → Add provider
 - OpenAI / ChatGPT uses your ChatGPT subscription rather than an API key. Connect from
   **Providers → OAuth providers → OpenAI / ChatGPT → Connect** in the Admin UI
   and finish signing in through your browser. Restart an already-running agent after connecting.
+- Gemini CLI uses Google sign-in and the subscription available to your Google
+  account, through the official CLI's [ACP interface](https://geminicli.com/docs/cli/acp-mode/).
+  Install `@google/gemini-cli` (tested with 0.66.0), then choose
+  **Providers → OAuth providers → Gemini CLI / Google Account → Connect**.
+  Complete the browser login on the machine running FCC. If the CLI is not on
+  PATH, set **Gemini CLI Executable** (`GEMINI_CLI_PATH`) to its executable or JS
+  entry point. Select a `gemini_cli/<model-id>` from the returned native catalog.
+  FCC keeps only the connection flag and model IDs; the official CLI stores and
+  refreshes Google tokens. Disconnecting FCC leaves the CLI's own login intact.
+  This is separate from Gemini API key access and Vertex AI billing.
+  Start the Claude terminal after connecting so its startup model discovery sees
+  the new provider; existing listed models can then be switched with `/model`.
+  Reconnect Gemini CLI to refresh its native model catalog.
+  The bridge starts an isolated native agent session per request, passes prior
+  conversation history as a transcript, and returns automatic tool calls to FCC's
+  caller for execution. It supports text and inline images. Native CLI settings
+  govern sampling and output limits; FCC's per-request sampling/output ceilings
+  are not enforced by this bridge. Forced tool selection is not supported.
 - Anthropic uses a separately billed API key. Add it under
   **Providers → Cloud providers → Anthropic → Configure**, then choose a discovered
   model. Multi-workspace keys also require `ANTHROPIC_WORKSPACE_ID`.
@@ -301,6 +334,16 @@ For another API endpoint, open **Providers → Custom providers → Add provider
   use `qwencloud/`. The keys and endpoints are not interchangeable. Coding Plan
   is for local, personal, interactive coding-agent use under the
   [Coding Plan terms](https://www.alibabacloud.com/help/en/model-studio/coding-plan).
+- QwenCloud's ordinary pay-as-you-go API uses `qwencloud_api/` and
+  `QWENCLOUD_PAYG_API_KEY`. Set `QWENCLOUD_PAYG_BASE_URL` for the key's
+  [region](https://docs.qwencloud.com/developer-guides/getting-started/regions);
+  the default is Singapore:
+  `https://ap-southeast-1.maas.qwencloudapi.com/compatible-mode/v1`.
+  In the provider dialog, set **QwenCloud API Models** (`QWENCLOUD_PAYG_MODELS`)
+  to comma-separated model IDs available in your region, for example
+  `qwen3.7-plus,qwen3.8-flash`. These populate the picker without probing the
+  [unsupported OpenAI-compatible model-list endpoint](https://docs.qwencloud.com/developer-guides/clients-and-developer-tools/deepseek-harness).
+  The configured list does not verify account access; an inference request does.
 - OpenCode Zen and OpenCode Go share `OPENCODE_API_KEY` but use the explicit
   `opencode_zen/` and `opencode_go/` model prefixes.
 - For Amazon Bedrock, set `BEDROCK_BASE_URL` to the URL for the same region as
@@ -537,6 +580,9 @@ Windows PowerShell:
 ```
 
 ## Project Links
+
+This fork's inherited automatic PyPI publication is disabled by default. Repository
+maintainers can enable it explicitly with the Actions variable `FCC_ENABLE_RELEASES=true`.
 
 For a problem after installation, run the command below and paste its output into your bug report.
 

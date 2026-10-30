@@ -54,6 +54,7 @@ from free_claude_code.providers.anthropic import AnthropicProvider
 from free_claude_code.providers.cloudflare import CloudflareProvider
 from free_claude_code.providers.deepseek import DeepSeekProvider
 from free_claude_code.providers.gemini import GeminiProvider
+from free_claude_code.providers.gemini_cli.provider import GeminiCLIProvider
 from free_claude_code.providers.github_copilot.provider import GitHubCopilotProvider
 from free_claude_code.providers.groq import GroqProvider
 from free_claude_code.providers.kilo import KiloProvider
@@ -68,6 +69,7 @@ from free_claude_code.providers.openai_chat import (
 )
 from free_claude_code.providers.openai_codex.provider import OpenAICodexProvider
 from free_claude_code.providers.opencode import OpenCodeProvider
+from free_claude_code.providers.qwencloud_api import QwenCloudAPIProvider
 from free_claude_code.providers.runtime import (
     ProviderRuntime,
     build_provider_config,
@@ -96,6 +98,10 @@ def _make_settings(**overrides):
     mock.alibaba_cloud_base_url = None
     mock.alibaba_cloud_proxy = None
     mock.qwencloud_api_keys = "test_qwencloud_key"
+    mock.qwencloud_payg_api_keys = "test_qwencloud_payg_key"
+    mock.qwencloud_payg_base_url = None
+    mock.qwencloud_payg_proxy = None
+    mock.qwencloud_payg_models = "qwen3.7-plus"
     mock.qwencloud_coding_api_keys = "test_qwencloud_coding_key"
     mock.together_api_keys = "test_together_key"
     mock.deepinfra_api_keys = "test_deepinfra_key"
@@ -1175,6 +1181,7 @@ async def test_create_provider_instantiates_each_builtin():
         "xai": OpenAIChatProvider,
         "anthropic": AnthropicProvider,
         "alibaba_cloud": AlibabaCloudProvider,
+        "qwencloud_api": QwenCloudAPIProvider,
         "qwencloud": OpenAIChatProvider,
         "qwencloud_coding": OpenAIChatProvider,
         "together": OpenAIChatProvider,
@@ -1223,6 +1230,7 @@ async def test_create_provider_instantiates_each_builtin():
         "zenmux": OpenAIChatProvider,
         "wandb": OpenAIChatProvider,
         "gemini": GeminiProvider,
+        "gemini_cli": GeminiCLIProvider,
         "vertex": VertexProvider,
         "groq": GroqProvider,
         "sambanova": OpenAIChatProvider,
@@ -1232,6 +1240,11 @@ async def test_create_provider_instantiates_each_builtin():
     sentinel_admission = MagicMock(spec=ProviderAdmissionController)
     auth = MagicMock()
     injected_factories = {
+        "gemini_cli": lambda config, _settings, admission: GeminiCLIProvider(
+            config,
+            auth=auth,
+            admission=admission,
+        ),
         "openai": lambda config, _settings, admission: OpenAICodexProvider(
             config,
             auth=auth,
@@ -1249,6 +1262,7 @@ async def test_create_provider_instantiates_each_builtin():
         patch("free_claude_code.providers.github_copilot.provider.AsyncOpenAI"),
         patch("free_claude_code.providers.openai_codex.provider.AsyncOpenAI"),
         patch("free_claude_code.providers.openai_api.provider.AsyncOpenAI"),
+        patch("free_claude_code.providers.gemini_cli.provider.AsyncOpenAI"),
         patch("httpx.AsyncClient"),
         patch(
             "free_claude_code.providers.admission.ProviderAdmissionController",

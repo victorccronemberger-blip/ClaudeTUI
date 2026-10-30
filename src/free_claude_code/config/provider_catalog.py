@@ -55,6 +55,10 @@ OPENAI_CODEX_DEFAULT_BASE = "https://chatgpt.com/backend-api/codex"
 # xAI OpenAI-compatible Chat Completions API.
 XAI_DEFAULT_BASE = "https://api.x.ai/v1"
 ALIBABA_CLOUD_DEFAULT_BASE = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
+# QwenCloud pay-as-you-go API. Keys and model availability are region-specific.
+QWENCLOUD_API_DEFAULT_BASE = (
+    "https://ap-southeast-1.maas.qwencloudapi.com/compatible-mode/v1"
+)
 # QwenCloud Token Plan OpenAI-compatible Chat Completions API.
 QWENCLOUD_DEFAULT_BASE = (
     "https://token-plan.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1"
@@ -251,6 +255,18 @@ PROVIDER_CATALOG: dict[str, ProviderDescriptor] = {
         base_url_attr="alibaba_cloud_base_url",
         proxy_attr="alibaba_cloud_proxy",
     ),
+    "qwencloud_api": ProviderDescriptor(
+        provider_id="qwencloud_api",
+        display_name="QwenCloud API",
+        website_url="https://www.qwencloud.com/",
+        logo_filename="qwen-color.svg",
+        credential_env="QWENCLOUD_PAYG_API_KEY",
+        credential_url="https://home.qwencloud.com/api-keys",
+        credential_attr="qwencloud_payg_api_keys",
+        default_base_url=QWENCLOUD_API_DEFAULT_BASE,
+        base_url_attr="qwencloud_payg_base_url",
+        proxy_attr="qwencloud_payg_proxy",
+    ),
     "qwencloud": ProviderDescriptor(
         provider_id="qwencloud",
         display_name="QwenCloud Token Plan",
@@ -386,6 +402,15 @@ PROVIDER_CATALOG: dict[str, ProviderDescriptor] = {
             "azure_openai_api_keys",
             "azure_openai_base_url",
         ),
+    ),
+    "gemini_cli": ProviderDescriptor(
+        provider_id="gemini_cli",
+        display_name="Gemini CLI / Google Account",
+        website_url="https://geminicli.com/",
+        logo_filename="gemini-color.svg",
+        auth_kind=ProviderAuthKind.CONNECTED_ACCOUNT,
+        static_credential="fcc-native-cli",
+        default_base_url="http://gemini-cli.invalid/v1",
     ),
     "gemini": ProviderDescriptor(
         provider_id="gemini",

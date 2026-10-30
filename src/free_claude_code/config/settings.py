@@ -272,6 +272,9 @@ class Settings(BaseModel):
 
     # ==================== Google Gemini (Google AI Studio) ====================
     gemini_api_keys: ApiKeyList = Field(default=(), validation_alias="GEMINI_API_KEY")
+    gemini_cli_path: OptionalNonEmptyString = Field(
+        default=None, validation_alias="GEMINI_CLI_PATH"
+    )
 
     # ==================== Google Vertex AI ====================
     vertex_project_id: OptionalNonEmptyString = Field(
@@ -306,6 +309,30 @@ class Settings(BaseModel):
     alibaba_cloud_base_url: OptionalNonEmptyString = Field(
         default=None, validation_alias="ALIBABA_CLOUD_BASE_URL"
     )
+
+    # ==================== QwenCloud pay-as-you-go API ====================
+    qwencloud_payg_api_keys: ApiKeyList = Field(
+        default=(), validation_alias="QWENCLOUD_PAYG_API_KEY"
+    )
+    qwencloud_payg_base_url: OptionalNonEmptyString = Field(
+        default=None, validation_alias="QWENCLOUD_PAYG_BASE_URL"
+    )
+    qwencloud_payg_proxy: OptionalNonEmptyString = Field(
+        default=None, validation_alias="QWENCLOUD_PAYG_PROXY"
+    )
+    qwencloud_payg_models: NonEmptyString = Field(
+        default="qwen3.7-plus", validation_alias="QWENCLOUD_PAYG_MODELS"
+    )
+
+    @field_validator("qwencloud_payg_models")
+    @classmethod
+    def validate_qwencloud_models(cls, value: str) -> str:
+        models = [model.strip() for model in value.split(",")]
+        if any(not model or any(char.isspace() for char in model) for model in models):
+            raise ValueError(
+                "Enter comma-separated QwenCloud model IDs without empty entries"
+            )
+        return ",".join(dict.fromkeys(models))
 
     # ==================== QwenCloud Token Plan (OpenAI-compatible) ====================
     qwencloud_api_keys: ApiKeyList = Field(

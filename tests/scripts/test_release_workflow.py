@@ -38,7 +38,9 @@ def test_post_merge_serializes_and_limits_publish_permissions():
     assert publish["permissions"] == {"contents": "write", "id-token": "write"}
     assert cache["permissions"] == {"contents": "read"}
     for job in (cache, publish):
-        assert job["if"] == "github.ref == 'refs/heads/main'"
+        assert job["if"] == (
+            "github.ref == 'refs/heads/main' && vars.FCC_ENABLE_RELEASES == 'true'"
+        )
         checkout = next(
             s for s in job["steps"] if s.get("uses", "").startswith("actions/checkout@")
         )

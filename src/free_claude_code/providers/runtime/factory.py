@@ -134,6 +134,23 @@ def _load_alibaba_cloud() -> ProviderFactory:
     return construct
 
 
+def _load_qwencloud_api() -> ProviderFactory:
+    from free_claude_code.providers.qwencloud_api import QwenCloudAPIProvider
+
+    def construct(
+        config: ProviderConfig,
+        settings: Settings,
+        admission: ProviderAdmissionController,
+    ) -> BaseProvider:
+        return QwenCloudAPIProvider(
+            config,
+            admission=admission,
+            model_ids=tuple(settings.qwencloud_payg_models.split(",")),
+        )
+
+    return construct
+
+
 def _load_lmstudio() -> ProviderFactory:
     from free_claude_code.providers.lmstudio import LMStudioProvider
 
@@ -237,6 +254,7 @@ def _load_opencode_go() -> ProviderFactory:
 _SPECIAL_PROVIDER_FACTORIES: dict[str, Callable[[], ProviderFactory]] = {
     "anthropic": _load_anthropic,
     "alibaba_cloud": _load_alibaba_cloud,
+    "qwencloud_api": _load_qwencloud_api,
     "nvidia_nim": _load_nvidia_nim,
     "open_router": _load_open_router,
     "openai_api": _load_openai_api,
@@ -251,7 +269,7 @@ _SPECIAL_PROVIDER_FACTORIES: dict[str, Callable[[], ProviderFactory]] = {
     "opencode_zen": _load_opencode_zen,
     "opencode_go": _load_opencode_go,
 }
-_INJECTED_PROVIDER_IDS = {"openai", "github_copilot"}
+_INJECTED_PROVIDER_IDS = {"openai", "github_copilot", "gemini_cli"}
 
 
 def _required_setting(settings: Settings, attr_name: str) -> str:

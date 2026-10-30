@@ -1,4 +1,4 @@
-"""Installed Claude launcher: native command handling with an FCC connection."""
+"""Launch Claude with a minimal prompt and the FCC gateway connection."""
 
 from collections.abc import Sequence
 
@@ -8,17 +8,73 @@ from free_claude_code.harnesses.resources import LaunchResources
 
 from .runner import HarnessSpec, LaunchContext, launch_harness
 
+CLEAN_SYSTEM_PROMPT = (
+    "You are a coding assistant working in the user's project. "
+    "Carry out the user's requests using the available tools. "
+    "Inspect relevant files before making changes, preserve unrelated work, "
+    "and verify results. Be direct and report what you actually did. "
+    "Ask a concise question only when essential information is missing."
+)
+
+
+def _native_options(args: list[str]) -> set[str]:
+    option_args = args[: args.index("--")] if "--" in args else args
+    return {arg.partition("=")[0] for arg in option_args}
+
+
+def _clean_arguments(args: list[str]) -> list[str]:
+    """Apply clean defaults, preserving explicit native options and literal text."""
+    options = _native_options(args)
+    defaults: list[str] = []
+    if not options.intersection({"--bare", "--safe-mode"}):
+        defaults.append("--safe-mode")
+    if not options.intersection({"--system-prompt", "--system-prompt-file"}):
+        defaults.extend(["--system-prompt", CLEAN_SYSTEM_PROMPT])
+    # Resumed conversations must not retain a previously recorded system prompt.
+    if "--system-prompt-snapshot" not in options:
+        defaults.extend(["--system-prompt-snapshot", "off"])
+    if not options.intersection(
+        {
+            "--permission-mode",
+            "--permission-prompts",
+            "--permission-prompt-tool",
+            "--dangerously-skip-permissions",
+        }
+    ):
+        defaults.append("--dangerously-skip-permissions")
+    return [*defaults, *args]
+
+
+def _clean_mode(ctx: LaunchContext) -> bool:
+    value = ctx.base_env.get("FCC_CLAUDE_CLEAN", "1").strip().casefold()
+    if value not in {"0", "1"}:
+        raise ValueError("FCC_CLAUDE_CLEAN must be 1 or 0.")
+    return value == "1"
+
 
 def _configure(
     ctx: LaunchContext, args: list[str], _files: LaunchResources
 ) -> PreparedLaunch:
+    env = build_claude_proxy_env(
+        proxy_root_url=ctx.proxy_root_url,
+        auth_token=ctx.auth_token,
+        base_env=ctx.base_env,
+    )
+    if _clean_mode(ctx):
+        args = _clean_arguments(args)
+        if "--bare" in _native_options(args):
+            # Explicit bare mode needs an API key. Use only the FCC-local token.
+            env["ANTHROPIC_API_KEY"] = ctx.auth_token
+        # Keep every model on the gateway even if the parent used a native
+        # Bedrock/Vertex/Foundry connection before launching FCC.
+        env = {
+            key: value
+            for key, value in env.items()
+            if not key.startswith("CLAUDE_CODE_USE_")
+        }
     return PreparedLaunch(
         [ctx.binary_path, *args],
-        build_claude_proxy_env(
-            proxy_root_url=ctx.proxy_root_url,
-            auth_token=ctx.auth_token,
-            base_env=ctx.base_env,
-        ),
+        env,
     )
 
 
