@@ -295,6 +295,13 @@ class Settings(BaseModel):
 
     # ==================== xAI / Grok (OpenAI-compatible) ====================
     xai_api_keys: ApiKeyList = Field(default=(), validation_alias="XAI_API_KEY")
+    drael_api_keys: ApiKeyList = Field(default=(), validation_alias="DRAEL_API_KEY")
+    drael_base_url: OptionalNonEmptyString = Field(
+        default=None, validation_alias="DRAEL_BASE_URL"
+    )
+    drael_proxy: OptionalNonEmptyString = Field(
+        default=None, validation_alias="DRAEL_PROXY"
+    )
 
     # ==================== Alibaba Cloud Model Studio ====================
     anthropic_api_keys: ApiKeyList = Field(

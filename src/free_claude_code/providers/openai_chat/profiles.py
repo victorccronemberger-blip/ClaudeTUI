@@ -182,6 +182,16 @@ def _apply_cohere_request_quirks(
     _merge_allowed_cohere_extra_body(body, request.extra_body)
 
 
+def _apply_drael_request_quirks(
+    body: dict[str, Any], _request: MessagesRequest, _policy: ReasoningPolicy
+) -> None:
+    # Omitting tools opts into Drael's server-owned catalogue and execution loop.
+    # Always name the caller catalogue, including an explicit empty catalogue.
+    body.setdefault("tools", [])
+    if not body["tools"]:
+        body["tool_choice"] = "none"
+
+
 _COHERE_EXTRA_BODY_KEYS = frozenset(
     {
         "frequency_penalty",
@@ -263,6 +273,20 @@ OPENAI_CHAT_PROFILES: dict[str, OpenAIChatProfile] = {
             aliases_field="aliases",
             input_modalities_path=("input_modalities",),
         ),
+    ),
+    "drael": OpenAIChatProfile(
+        _policy("DRAEL", ReasoningReplayMode.REASONING_CONTENT),
+        NamedEffortReasoning(
+            _LOW_MEDIUM_HIGH, disabled_value="low", enabled_value="medium"
+        ),
+        postprocessors=(_apply_drael_request_quirks,),
+        model_listing=OpenAIModelListing(
+            path="/models",
+            thinking_boolean_path=("reasoning",),
+            input_modalities_path=("modalities", "input"),
+            context_window_tokens_path=("context_length",),
+        ),
+        normalize_base_url=True,
     ),
     "qwencloud": OpenAIChatProfile(
         _policy(

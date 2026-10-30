@@ -18,6 +18,13 @@ class ProviderFieldOverride(TypedDict, total=False):
 
 
 _PROVIDER_FIELD_OVERRIDES: dict[str, ProviderFieldOverride] = {
+    "DRAEL_API_KEY": {
+        "label": "Drael API Keys",
+        "description": "Drael API access. The provider controls plan eligibility and quota. The proxy discovers available models, preserves caller-owned tools and streams reasoning separately. Drael does not enforce max_tokens and maps disabled reasoning to low effort.",
+    },
+    "DRAEL_BASE_URL": {
+        "description": "Optional OpenAI-compatible Drael endpoint. Defaults to https://drael.sh/v1.",
+    },
     "ANTHROPIC_API_KEY": {
         "description": "Anthropic API access with separate usage billing. Messages requests use Anthropic tools and client thinking controls. Native fallback uses other Anthropic models. FCC local web tools apply to compatibility routes.",
     },

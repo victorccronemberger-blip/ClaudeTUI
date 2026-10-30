@@ -1,5 +1,5 @@
 #ifndef AppVersion
-  #define AppVersion "0.2.0"
+  #define AppVersion "0.2.1"
 #endif
 #ifndef AppSource
   #define AppSource "..\..\dist\windows\" + AppVersion + "\ClaudeTUI"
@@ -43,6 +43,7 @@ Source: "..\..\LICENSE"; DestDir: "{app}"
 Type: filesandordirs; Name: "{app}\_internal\free_claude_code-0.1.0.dist-info"
 Type: filesandordirs; Name: "{app}\_internal\free_claude_code-0.1.1.dist-info"
 Type: filesandordirs; Name: "{app}\_internal\free_claude_code-0.1.2.dist-info"
+Type: filesandordirs; Name: "{app}\_internal\free_claude_code-0.2.0.dist-info"
 
 [Icons]
 Name: "{autodesktop}\ClaudeTUI"; Filename: "{app}\ClaudeTUI.exe"; WorkingDir: "{app}"

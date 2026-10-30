@@ -10,7 +10,7 @@ ela é independente da numeração do projeto original.
 
 ## Instalar e usar
 
-1. Baixe **ClaudeTUI-Setup-0.2.0-x64.exe** em [Releases](https://github.com/victorccronemberger-blip/ClaudeTUI/releases).
+1. Baixe **ClaudeTUI-Setup-0.2.1-x64.exe** em [Releases](https://github.com/victorccronemberger-blip/ClaudeTUI/releases).
 2. Execute o instalador e abra **ClaudeTUI** pelo atalho da área de trabalho ou menu Iniciar.
 3. Em **Provedores e modelos**, conecte sua conta ou informe sua chave, selecione o modelo e clique em **Apply**.
 4. Escolha a pasta do projeto na janela inicial e clique em **Abrir terminal**.
@@ -24,6 +24,7 @@ O ícone na bandeja permite abrir o aplicativo, acessar os provedores, reiniciar
 ## Contas e provedores
 
 - **OpenAI:** conexão OAuth disponível no painel.
+- **Drael:** chave da API no painel, catálogo automático e modelo `drael/drael-v1` no seletor. Suporta streaming, imagens e ferramentas do cliente. O raciocínio usa os níveis low/medium/high; desligá-lo equivale a low no servidor. A API Drael não aplica `max_tokens`. Veja a [documentação oficial](https://drael.sh/docs/chat).
 - **Google / Gemini (Antigravity):** conecte esse provedor em **OAuth providers**. Usa o cliente oficial e sua sessão existente; valida uma resposta real antes de habilitar os modelos. Selecione `google_account/<modelo>` no painel ou use `/model` no terminal. A elegibilidade e a cota são controladas pelo Google. Créditos adicionais ficam desativados para as solicitações do proxy.
 - **Gemini CLI (legado):** o Google desativou esse acesso para contas individuais e assinaturas AI Pro/Ultra em 18 de junho de 2026. Essas assinaturas migraram para o Antigravity; este adaptador ACP não oferece acesso ao Antigravity. Veja o [aviso oficial do Google](https://developers.google.com/gemini-code-assist/docs/deprecations/code-assist-individuals). O acesso por chave da API Gemini é uma conexão separada.
 - **QwenCloud API:** chave pay-as-you-go, endpoint regional e IDs dos modelos configuráveis. Esse acesso é separado dos planos de assinatura QwenCloud.
@@ -40,7 +41,7 @@ uv sync --locked --group windows-build
 uv run --no-sync python scripts/build_windows.py
 ```
 
-O resultado fica em `dist/ClaudeTUI-Setup-0.2.0-x64.exe`. O build baixa as versões fixadas em `desktop/windows/runtime-lock.json`, verifica seus hashes, usa o lockfile npm e gera o aplicativo e o instalador Inno Setup. O teste `ClaudeTUI-Terminal.exe --self-check` verifica a distribuição; `--smoke-test` também executa as ferramentas incluídas e o ciclo de vida da API em processo, sem chamar provedores.
+O resultado fica em `dist/ClaudeTUI-Setup-0.2.1-x64.exe`. O build baixa as versões fixadas em `desktop/windows/runtime-lock.json`, verifica seus hashes, usa o lockfile npm e gera o aplicativo e o instalador Inno Setup. O teste `ClaudeTUI-Terminal.exe --self-check` verifica a distribuição; `--smoke-test` também executa as ferramentas incluídas e o ciclo de vida da API em processo, sem chamar provedores.
 
 O serviço usa apenas o endereço local. Configurações continuam em `~/.fcc`; ferramentas gerenciadas e preferências do aplicativo ficam em `%LOCALAPPDATA%/ClaudeTUI`. Atualizações do instalador substituem o aplicativo e preservam esses dados.
 

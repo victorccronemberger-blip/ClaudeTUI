@@ -54,6 +54,8 @@ KILO_DEFAULT_BASE = "https://api.kilo.ai/api/gateway"
 OPENAI_CODEX_DEFAULT_BASE = "https://chatgpt.com/backend-api/codex"
 # xAI OpenAI-compatible Chat Completions API.
 XAI_DEFAULT_BASE = "https://api.x.ai/v1"
+# Drael's authenticated OpenAI-compatible API.
+DRAEL_DEFAULT_BASE = "https://drael.sh/v1"
 ALIBABA_CLOUD_DEFAULT_BASE = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
 # QwenCloud pay-as-you-go API. Keys and model availability are region-specific.
 QWENCLOUD_API_DEFAULT_BASE = (
@@ -242,6 +244,18 @@ PROVIDER_CATALOG: dict[str, ProviderDescriptor] = {
         credential_attr="xai_api_keys",
         default_base_url=XAI_DEFAULT_BASE,
         proxy_attr="xai_proxy",
+    ),
+    "drael": ProviderDescriptor(
+        provider_id="drael",
+        display_name="Drael",
+        website_url="https://drael.sh/",
+        logo_filename="drael.svg",
+        credential_env="DRAEL_API_KEY",
+        credential_url="https://drael.sh/developers",
+        credential_attr="drael_api_keys",
+        base_url_attr="drael_base_url",
+        default_base_url=DRAEL_DEFAULT_BASE,
+        proxy_attr="drael_proxy",
     ),
     "alibaba_cloud": ProviderDescriptor(
         provider_id="alibaba_cloud",
