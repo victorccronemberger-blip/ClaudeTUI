@@ -37,6 +37,11 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Source: "{#AppSource}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\..\LICENSE"; DestDir: "{app}"
 
+[InstallDelete]
+; Remove only the obsolete distribution metadata installed by version 0.1.0.
+; Leaving two versions makes importlib.metadata report the old server version.
+Type: filesandordirs; Name: "{app}\_internal\free_claude_code-0.1.0.dist-info"
+
 [Icons]
 Name: "{autodesktop}\ClaudeTUI"; Filename: "{app}\ClaudeTUI.exe"; WorkingDir: "{app}"
 Name: "{group}\ClaudeTUI"; Filename: "{app}\ClaudeTUI.exe"; WorkingDir: "{app}"
