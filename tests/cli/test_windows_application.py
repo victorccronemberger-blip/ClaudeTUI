@@ -25,11 +25,36 @@ def test_cached_models_are_not_provider_credentials():
     }
     assert not control.provider_ready(status)
     assert not control.provider_ready(status, {"connected": False})
-    assert control.provider_ready(status, {"connected": True})
+    assert not control.provider_ready(status, {"connected": True, "model_count": 0})
+    assert control.provider_ready(status, {"connected": True, "model_count": 1})
     status["provider_status"] = [
         {"provider_id": "gemini_cli", "kind": "remote", "status": "missing_key"}
     ]
     assert not control.provider_ready(status, {"connected": True})
+
+
+def test_connected_account_with_failed_discovery_does_not_enable_terminal():
+    status = {
+        "provider": "openai",
+        "provider_status": [{"provider_id": "openai", "kind": "connected_account"}],
+        "startup": {
+            "providers": {"openai": "failed"},
+            "provider_errors": {
+                "openai": "The provider returned an invalid model list."
+            },
+        },
+    }
+    account = {"connected": True, "model_count": 1}
+    assert not control.provider_ready(status, account)
+    assert (
+        control.provider_problem(status, account)
+        == "The provider returned an invalid model list."
+    )
+
+
+def test_other_program_on_service_port_is_not_mistaken_for_claudetui(monkeypatch):
+    monkeypatch.setattr(control, "read_api", lambda _path: ["unrelated JSON response"])
+    assert control.service_status() is None
 
 
 def test_tampered_download_never_becomes_an_install(monkeypatch, tmp_path):

@@ -9,7 +9,6 @@ from typing import Any
 
 import httpx2
 from openai import AsyncOpenAI
-from packaging.version import Version
 
 from free_claude_code.application.model_metadata import ProviderModelInfo
 from free_claude_code.core.anthropic.models import MessagesRequest
@@ -26,6 +25,7 @@ from free_claude_code.providers.endpoint import RequestEndpoint
 from free_claude_code.providers.failure_policy import provider_authentication_status
 from free_claude_code.providers.http import ProviderAttemptScope
 from free_claude_code.providers.model_listing import (
+    ModelListResponseError,
     optional_input_modalities,
     optional_positive_int,
     reasoning_capability_from_options,
@@ -42,6 +42,12 @@ try:
     FCC_VERSION = version("free-claude-code")
 except PackageNotFoundError:
     FCC_VERSION = "dev"
+
+# The Codex backend filters the catalog by its protocol/client version. FCC's
+# independently numbered releases (for example 0.1.0) are not Codex versions:
+# using them here returns HTTP 200 with an empty catalog for a connected account.
+# Keep this tested catalog compatibility version separate from product metadata.
+OPENAI_CODEX_CATALOG_VERSION = "0.163.0"
 
 
 class OpenAICodexProvider(BaseProvider):
@@ -130,7 +136,7 @@ class OpenAICodexProvider(BaseProvider):
                         "models",
                         cast_to=object,
                         options={
-                            "params": {"client_version": _model_list_client_version()}
+                            "params": {"client_version": OPENAI_CODEX_CATALOG_VERSION}
                         },
                     )
                     await attempt.accept()
@@ -230,19 +236,6 @@ class OpenAICodexProvider(BaseProvider):
         )
 
 
-def _model_list_client_version() -> str:
-    """Format FCC's release and VCS development versions for the catalog API."""
-    if FCC_VERSION == "dev":
-        return "0.0.0-dev"
-    parsed = Version(FCC_VERSION)
-    formatted = f"{parsed.major}.{parsed.minor}.{parsed.micro}"
-    if parsed.dev is not None:
-        formatted += f"-dev.{parsed.dev}"
-    if parsed.local is not None:
-        formatted += f"+{parsed.local}"
-    return formatted
-
-
 async def _endpoint_required() -> str:
     raise RuntimeError(
         "Codex requests require request-scoped subscription credentials."
@@ -251,7 +244,9 @@ async def _endpoint_required() -> str:
 
 def _model_infos(payload: Any) -> frozenset[ProviderModelInfo]:
     if not isinstance(payload, dict) or not isinstance(payload.get("models"), list):
-        raise ValueError("OpenAI model-list response is missing the models array.")
+        raise ModelListResponseError(
+            "OpenAI model-list response is missing the models array."
+        )
     infos: set[ProviderModelInfo] = set()
     for model in payload["models"]:
         if not isinstance(model, dict):
@@ -288,7 +283,7 @@ def _model_infos(payload: Any) -> frozenset[ProviderModelInfo]:
             )
         )
     if not infos:
-        raise ValueError("OpenAI did not advertise any visible models.")
+        raise ModelListResponseError("OpenAI did not advertise any visible models.")
     return frozenset(infos)
 
 

@@ -405,7 +405,7 @@ PROVIDER_CATALOG: dict[str, ProviderDescriptor] = {
     ),
     "gemini_cli": ProviderDescriptor(
         provider_id="gemini_cli",
-        display_name="Gemini CLI / Google Account",
+        display_name="Gemini CLI (legacy Google sign-in)",
         website_url="https://geminicli.com/",
         logo_filename="gemini-color.svg",
         auth_kind=ProviderAuthKind.CONNECTED_ACCOUNT,

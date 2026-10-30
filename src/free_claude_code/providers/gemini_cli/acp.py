@@ -18,6 +18,32 @@ class GeminiCLIError(RuntimeError):
     """A native CLI operation failed without exposing its credential output."""
 
 
+def _rpc_error(error: object) -> GeminiCLIError:
+    """Expose only recognized diagnostics, never arbitrary native OAuth output."""
+    message = error.get("message", "") if isinstance(error, dict) else ""
+    if isinstance(message, str):
+        if (
+            "This client is no longer supported for Gemini Code Assist for individuals"
+            in message
+        ):
+            return GeminiCLIError(
+                "Google retired Gemini CLI sign-in for individual, Google AI Pro, "
+                "and Google AI Ultra accounts on June 18, 2026. "
+                "Those accounts must use Google's supported Antigravity products. "
+                "Gemini Code Assist organization subscriptions have separate eligibility. "
+                "See https://developers.google.com/gemini-code-assist/docs/deprecations/code-assist-individuals"
+            )
+        if message == "Gemini API key is missing or not configured.":
+            return GeminiCLIError(
+                "Gemini CLI has no selected Google account for this session. "
+                "Reconnect an eligible Gemini Code Assist organization account. "
+                "This connection does not use a Gemini API key."
+            )
+    return GeminiCLIError(
+        "Gemini CLI rejected the operation. Check the native account login and model access."
+    )
+
+
 def cli_command(configured: str | None = None) -> list[str]:
     executable = configured or shutil.which("gemini")
     if not executable:
@@ -255,11 +281,7 @@ class ACPConnection:
                     future := self._pending.get(packet.get("id"))
                 ) is not None and not future.done():
                     if "error" in packet:
-                        future.set_exception(
-                            GeminiCLIError(
-                                "Gemini CLI rejected the operation. Check the native account login and model access."
-                            )
-                        )
+                        future.set_exception(_rpc_error(packet["error"]))
                     else:
                         future.set_result(packet.get("result", {}))
         except ValueError, OSError:

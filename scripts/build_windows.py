@@ -20,6 +20,7 @@ from free_claude_code.windows_app.runtime import download_verified  # noqa: E402
 
 BUILD = ROOT / ".build/windows"
 LOCK = json.loads((ROOT / "desktop/windows/runtime-lock.json").read_text("utf-8"))
+PRODUCT_DIR = ROOT / "dist/windows" / LOCK["version"] / "ClaudeTUI"
 
 
 def run(command: list[str], **kwargs) -> None:
@@ -82,13 +83,13 @@ def freeze() -> None:
             "--workpath",
             str(BUILD / "pyinstaller"),
             "--distpath",
-            str(ROOT / "dist/windows"),
+            str(PRODUCT_DIR.parent),
             str(ROOT / "desktop/windows/ClaudeTUI.spec"),
         ],
         cwd=ROOT,
     )
     check = subprocess.run(
-        [str(ROOT / "dist/windows/ClaudeTUI/ClaudeTUI-Terminal.exe"), "--self-check"],
+        [str(PRODUCT_DIR / "ClaudeTUI-Terminal.exe"), "--self-check"],
         cwd=ROOT,
         check=True,
         capture_output=True,
@@ -120,7 +121,7 @@ def installer() -> None:
         [
             str(compiler),
             f"/DAppVersion={LOCK['version']}",
-            f"/DAppSource={ROOT / 'dist/windows/ClaudeTUI'}",
+            f"/DAppSource={PRODUCT_DIR}",
             str(ROOT / "desktop/windows/installer.iss"),
         ],
         cwd=ROOT,

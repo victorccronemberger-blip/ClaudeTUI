@@ -53,6 +53,8 @@ for line in sys.stdin:
   result(i,{'protocolVersion':1,'authMethods':[{'id':'oauth-personal'}],'agentCapabilities':{'mcpCapabilities':{'http':True}}})
  elif m=='authenticate':
   if os.environ.get('FCC_WORKER_LOGIN_WAIT'):time.sleep(60)
+  if os.environ.get('FCC_WORKER_AUTH_ERROR'):
+   emit({'id':i,'error':{'code':-32000,'message':os.environ['FCC_WORKER_AUTH_ERROR']}});continue
   assert args['methodId']=='oauth-personal';result(i,{})
  elif m=='session/new':
   servers=args['mcpServers']
@@ -127,6 +129,42 @@ async def test_cancel_native_browser_login_reaps_process_without_saving_connecti
         assert auth._task is None
     finally:
         await auth.close()
+
+
+@pytest.mark.asyncio
+async def test_retired_consumer_account_explains_google_eligibility_without_exposing_native_output(
+    worker, monkeypatch, tmp_path
+):
+    monkeypatch.setenv(
+        "FCC_WORKER_AUTH_ERROR",
+        "This client is no longer supported for Gemini Code Assist for individuals. "
+        "Native credential must-stay-private and https://example.invalid/?code=private-code",
+    )
+    path = tmp_path / "consumer-connection.json"
+    auth = GeminiCLIAuthManager(state_path=path)
+    try:
+        await auth.start_login(ConnectedAccountLoginMode.BROWSER)
+        assert auth._task is not None
+        await asyncio.wait_for(auth._task, 15)
+        status = auth.status()
+        assert status.state == "error"
+        assert not status.connected
+        assert status.message is not None
+        assert "June 18, 2026" in status.message
+        assert "Google AI Pro" in status.message
+        assert "Antigravity" in status.message
+        assert "developers.google.com" in status.message
+        assert "must-stay-private" not in status.message
+        assert "private-code" not in status.message
+        assert not path.exists()
+    finally:
+        await auth.close()
+
+
+def test_unrecognized_native_rpc_error_never_exposes_credentials():
+    error = acp._rpc_error({"code": -32000, "message": "access_token=private-token"})
+    assert "private-token" not in str(error)
+    assert "Check the native account login" in str(error)
 
 
 @pytest.mark.asyncio

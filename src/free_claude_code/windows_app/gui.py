@@ -13,7 +13,13 @@ from tkinter import filedialog, messagebox, ttk
 from free_claude_code.config.loader import get_settings
 from free_claude_code.config.server_urls import local_admin_url
 
-from .control import ensure_service, provider_ready, read_api, service_status
+from .control import (
+    ensure_service,
+    provider_problem,
+    provider_ready,
+    read_api,
+    service_status,
+)
 from .runtime import (
     application_dir,
     configure_environment,
@@ -266,9 +272,15 @@ class ControlCenter:
                             "Clique em Tentar novamente para iniciar o serviço."
                         )
                     elif not self.account_ready:
-                        self.headline.set("Conecte seu primeiro provedor")
+                        problem = provider_problem(status, account)
+                        self.headline.set(
+                            "O provedor precisa de atenção"
+                            if problem
+                            else "Escolha um provedor e modelo"
+                        )
                         self.detail.set(
-                            "Abra Provedores e modelos, conecte sua conta e selecione o modelo."
+                            problem
+                            or "Abra Provedores e modelos, conecte sua conta e selecione o modelo."
                         )
                     else:
                         self.headline.set("Pronto para começar")
@@ -290,7 +302,9 @@ class ControlCenter:
 
     def open_logs(self) -> None:
         if not self.preview:
-            logs = user_dir() / "logs"
+            from free_claude_code.config.paths import server_log_path
+
+            logs = server_log_path().parent
             logs.mkdir(parents=True, exist_ok=True)
             subprocess.Popen(["explorer.exe", str(logs)], close_fds=True)
 

@@ -17,6 +17,12 @@ from free_claude_code.config.paths import config_dir_path
 
 from .acp import ACPConnection, GeminiCLIError, cli_command
 
+CONSUMER_SIGNIN_NOTICE = (
+    "Google ended Gemini CLI access for individual, Google AI Pro and Ultra accounts "
+    "on June 18, 2026. Those subscriptions now use Antigravity. "
+    "See https://developers.google.com/gemini-code-assist/docs/deprecations/code-assist-individuals"
+)
+
 
 class GeminiCLIAuthManager:
     """Let the official CLI own browser login, token storage and token renewal."""
@@ -94,7 +100,12 @@ class GeminiCLIAuthManager:
             display_identity="Native Gemini CLI" if self._models else None,
             supported_login_modes=(ConnectedAccountLoginMode.BROWSER,),
             default_login_mode=ConnectedAccountLoginMode.BROWSER,
-            message=self._error,
+            message=self._error
+            or (
+                CONSUMER_SIGNIN_NOTICE
+                if state is ConnectedAccountState.DISCONNECTED
+                else None
+            ),
         )
 
     async def start_login(

@@ -383,7 +383,7 @@ def provider_field_specs() -> tuple[ConfigFieldSpec, ...]:
             settings_attr="gemini_cli_path",
             provider_ids=("gemini_cli",),
             restart_required=True,
-            description="Optional path to Gemini CLI (or its dist/index.js). Google sign-in and subscription access stay inside the official CLI. Disconnecting FCC does not sign out the CLI.",
+            description="Optional path to Gemini CLI or bundle/gemini.js. Google ended individual/AI Pro/Ultra access through Gemini CLI on June 18, 2026; those accounts now use Antigravity. Other account eligibility is controlled by Google. Disconnecting FCC does not sign out the CLI.",
         ),
         ConfigFieldSpec(
             key="QWENCLOUD_PAYG_MODELS",

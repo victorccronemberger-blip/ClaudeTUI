@@ -287,10 +287,13 @@ For another API endpoint, open **Providers → Custom providers → Add provider
 - OpenAI / ChatGPT uses your ChatGPT subscription rather than an API key. Connect from
   **Providers → OAuth providers → OpenAI / ChatGPT → Connect** in the Admin UI
   and finish signing in through your browser. Restart an already-running agent after connecting.
-- Gemini CLI uses Google sign-in and the subscription available to your Google
-  account, through the official CLI's [ACP interface](https://geminicli.com/docs/cli/acp-mode/).
+- Gemini CLI is a legacy Google sign-in connection through the official CLI's
+  [ACP interface](https://geminicli.com/docs/cli/acp-mode/). Google ended consumer,
+  AI Pro and Ultra access on June 18, 2026; those accounts now use Antigravity,
+  which is not supported by this ACP adapter. See the
+  [official deprecation notice](https://developers.google.com/gemini-code-assist/docs/deprecations/code-assist-individuals).
   Install `@google/gemini-cli` (tested with 0.66.0), then choose
-  **Providers → OAuth providers → Gemini CLI / Google Account → Connect**.
+  **Providers → OAuth providers → Gemini CLI (legacy Google sign-in) → Connect**.
   Complete the browser login on the machine running FCC. If the CLI is not on
   PATH, set **Gemini CLI Executable** (`GEMINI_CLI_PATH`) to its executable or JS
   entry point. Select a `gemini_cli/<model-id>` from the returned native catalog.

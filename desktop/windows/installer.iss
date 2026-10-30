@@ -1,8 +1,8 @@
 #ifndef AppVersion
-  #define AppVersion "0.1.0"
+  #define AppVersion "0.1.1"
 #endif
 #ifndef AppSource
-  #define AppSource "..\..\dist\windows\ClaudeTUI"
+  #define AppSource "..\..\dist\windows\" + AppVersion + "\ClaudeTUI"
 #endif
 [Setup]
 AppId={{5FE82A69-02E3-45BC-9B2E-C98F6357CE7B}

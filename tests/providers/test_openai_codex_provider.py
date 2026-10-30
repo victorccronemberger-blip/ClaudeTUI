@@ -262,28 +262,29 @@ async def test_streamed_authentication_error_has_authentication_status(
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "package_version,client_version",
+    "package_version",
     [
-        ("6.5.9", "6.5.9"),
-        ("6.5.9.dev0", "6.5.9-dev.0"),
-        ("6.5.9.dev3+gb89b44b2a", "6.5.9-dev.3+gb89b44b2a"),
-        ("6.5.9.dev3+gb89b44b2a.d20260930", "6.5.9-dev.3+gb89b44b2a.d20260930"),
-        ("6.5.9+d20260930", "6.5.9+d20260930"),
-        ("dev", "0.0.0-dev"),
+        "0.1.0",
+        "6.5.9",
+        "6.5.9.dev0",
+        "6.5.9.dev3+gb89b44b2a",
+        "6.5.9.dev3+gb89b44b2a.d20260930",
+        "6.5.9+d20260930",
+        "dev",
     ],
 )
-async def test_model_discovery_formats_package_version_for_upstream(
-    monkeypatch: pytest.MonkeyPatch, package_version: str, client_version: str
+async def test_model_discovery_uses_codex_compatibility_not_product_version(
+    monkeypatch: pytest.MonkeyPatch, package_version: str
 ) -> None:
     monkeypatch.setattr(codex_provider_module, "FCC_VERSION", package_version)
     requests: list[httpx2.Request] = []
 
     def handler(request: httpx2.Request) -> httpx2.Response:
         requests.append(request)
-        if request.url.params.get("client_version") != client_version:
-            return httpx2.Response(
-                400, json={"detail": "Invalid client_version format"}
-            )
+        # The actual Codex catalog returned HTTP 200/models:[] for 0.1.0, while
+        # the same connected account returned visible models for 0.163.0.
+        if request.url.params.get("client_version") != "0.163.0":
+            return httpx2.Response(200, json={"models": []})
         return httpx2.Response(
             200, json={"models": [{"slug": "gpt-visible", "visibility": "list"}]}
         )
@@ -303,6 +304,17 @@ async def test_model_discovery_formats_package_version_for_upstream(
     assert len(requests) == 1
     assert requests[0].headers["version"] == package_version
     assert requests[0].headers["user-agent"] == f"codex_cli_rs/{package_version}"
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [{}, {"models": []}, {"models": [{"slug": "hidden", "visibility": "hide"}]}],
+)
+def test_unusable_catalog_is_reported_as_a_model_list_response_error(payload) -> None:
+    from free_claude_code.providers.model_listing import ModelListResponseError
+
+    with pytest.raises(ModelListResponseError):
+        codex_provider_module._model_infos(payload)
 
 
 @pytest.mark.asyncio

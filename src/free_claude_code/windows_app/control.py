@@ -6,13 +6,16 @@ import time
 from urllib.request import Request
 
 from free_claude_code.cli.local_http import open_local_request
-from free_claude_code.config.loader import get_settings
+from free_claude_code.config.loader import clear_settings_cache, get_settings
 from free_claude_code.config.server_urls import local_proxy_root_url
 
 from .runtime import application_dir
 
 
 def read_api(path: str) -> dict:
+    # Applying configuration can move the service to a new port. A GUI process
+    # must not keep probing the settings cached at its first launch.
+    clear_settings_cache()
     request = Request(local_proxy_root_url(get_settings()) + path)
     with open_local_request(request, timeout=3) as response:
         return json.load(response)
@@ -22,7 +25,8 @@ def service_status() -> dict | None:
     try:
         status = read_api("/admin/api/status")
         if (
-            status.get("status") == "running"
+            isinstance(status, dict)
+            and status.get("status") == "running"
             and isinstance(status.get("instance_id"), str)
             and len(status["instance_id"]) == 32
             and isinstance(status.get("provider_status"), list)
@@ -46,9 +50,37 @@ def provider_ready(status: dict, account: dict | None = None) -> bool:
     )
     if entry is None:
         return False
+    discovery = status.get("startup", {}).get("providers", {}).get(provider)
+    if discovery is not None and discovery != "ready":
+        return False
     if entry.get("kind") == "connected_account":
-        return bool(account and account.get("connected"))
+        return bool(
+            account and account.get("connected") and account.get("model_count", 0) > 0
+        )
     return entry.get("status") == "configured"
+
+
+def provider_problem(status: dict, account: dict | None = None) -> str | None:
+    """Use credential-free status diagnostics instead of claiming readiness."""
+    provider = status.get("provider")
+    row = next(
+        (
+            r
+            for r in status.get("provider_status", [])
+            if r.get("provider_id") == provider
+        ),
+        {},
+    )
+    if row.get("kind") != "connected_account" and row.get("status") != "configured":
+        return None
+    error = status.get("startup", {}).get("provider_errors", {}).get(provider)
+    if error:
+        return str(error)
+    if account and account.get("state") == "error":
+        return account.get("message") or "A conexão com o provedor falhou."
+    if account and account.get("connected") and not account.get("model_count"):
+        return "A conta conectou, mas os modelos ainda não carregaram. Atualize os modelos no painel."
+    return None
 
 
 def ensure_service() -> None:
