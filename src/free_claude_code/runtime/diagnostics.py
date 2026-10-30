@@ -94,6 +94,8 @@ EXCLUDED_FIELDS = {
     "cloudflare_account_id",
     "anthropic_workspace_id",
     "vertex_project_id",
+    "gemini_cli_path",
+    "qwencloud_payg_models",
 } | {d.credential_attr for d in PROVIDER_CATALOG.values() if d.credential_attr}
 URL_FIELDS = {
     attr

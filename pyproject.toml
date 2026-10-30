@@ -96,6 +96,7 @@ url = "https://download.pytorch.org/whl/cu130"
 explicit = true
 
 [dependency-groups]
+windows-build = ["pyinstaller==6.22.3; sys_platform == 'win32'"]
 dev = [
     "pytest>=9.1.1",
     "pytest-asyncio>=1.4.0",

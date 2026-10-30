@@ -6,6 +6,9 @@ __pycache__
 .serena
 .venv
 .ua/
+.build/
+dist/
+build/
 .understand-anything/
 agent_workspace
 .env
