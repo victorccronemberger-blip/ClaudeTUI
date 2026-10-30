@@ -37,7 +37,7 @@ def main() -> None:
         try:
             from free_claude_code.windows_app.control import launch_terminal
 
-            launch_terminal()
+            launch_terminal(sys.argv[1:])
         except Exception as exc:
             print(f"ClaudeTUI: {exc}")
             input("Pressione Enter para fechar…")

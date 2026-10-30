@@ -102,7 +102,7 @@ def ensure_service() -> None:
     )
 
 
-def launch_terminal() -> None:
+def launch_terminal(args: list[str] | None = None) -> None:
     from contextlib import ExitStack
 
     from free_claude_code.cli.launchers.claude import _configure
@@ -128,7 +128,7 @@ def launch_terminal() -> None:
         None,
     )
     with ExitStack() as stack:
-        prepared = _configure(context, [], LaunchResources(stack))
+        prepared = _configure(context, list(args or []), LaunchResources(stack))
         run_client_process(
             command=prepared.command,
             env=prepared.env,

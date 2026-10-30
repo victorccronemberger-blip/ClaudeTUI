@@ -10,7 +10,7 @@ ela é independente da numeração do projeto original.
 
 ## Instalar e usar
 
-1. Baixe **ClaudeTUI-Setup-0.2.1-x64.exe** em [Releases](https://github.com/victorccronemberger-blip/ClaudeTUI/releases).
+1. Baixe **ClaudeTUI-Setup-0.3.0-x64.exe** em [Releases](https://github.com/victorccronemberger-blip/ClaudeTUI/releases).
 2. Execute o instalador e abra **ClaudeTUI** pelo atalho da área de trabalho ou menu Iniciar.
 3. Em **Provedores e modelos**, conecte sua conta ou informe sua chave, selecione o modelo e clique em **Apply**.
 4. Escolha a pasta do projeto na janela inicial e clique em **Abrir terminal**.
@@ -20,6 +20,14 @@ Use **`/model`** no terminal para trocar entre os modelos dos provedores já con
 O aplicativo inclui Python, Node.js e Gemini CLI. Na primeira abertura, prepara automaticamente Claude Code, Git e Antigravity, verificando os arquivos oficiais antes de instalá-los. Não requer Python, npm, uv ou ajustes manuais de PATH.
 
 O ícone na bandeja permite abrir o aplicativo, acessar os provedores, reiniciar o serviço ou encerrar o ClaudeTUI. Para atualizar, instale a nova versão sobre a anterior. Para desinstalar, use **Aplicativos instalados** do Windows. A desinstalação preserva suas configurações e contas.
+
+## Subagentes com outros modelos
+
+Qualquer modelo com suporte a ferramentas pode coordenar os demais modelos configurados. Ao abrir o terminal, o ClaudeTUI registra subagentes com o modelo de cada provedor fixado na definição. Os nomes `drael`, `deepseek-pro` e suas variantes `-reviewer` aparecem somente quando os modelos estão disponíveis; os demais agentes identificam o provedor e o modelo na descrição.
+
+Exemplo de pedido: “Use um subagente Drael para implementar X. Depois, peça ao DeepSeek Pro para revisar os arquivos. Aguarde a revisão, corrija os problemas e execute a verificação.” O mesmo fluxo funciona com Drael como coordenador e Argon como executor. Revisores dedicados recebem apenas ferramentas de leitura, busca de arquivos e busca de texto.
+
+A delegação depende do suporte a ferramentas e das decisões do modelo coordenador; as políticas dos provedores continuam aplicáveis. O catálogo é carregado ao abrir o terminal. Catálogos muito grandes priorizam Drael, DeepSeek Pro, o modelo selecionado e a cobertura dos provedores dentro do limite de argumentos do Windows. As opções nativas explícitas `--bare` e `--safe-mode` desativam o registro automático. O executável `ClaudeTUI-Terminal.exe` também aceita os argumentos nativos, incluindo `-p` para execução sem interface interativa.
 
 ## Contas e provedores
 
@@ -41,7 +49,7 @@ uv sync --locked --group windows-build
 uv run --no-sync python scripts/build_windows.py
 ```
 
-O resultado fica em `dist/ClaudeTUI-Setup-0.2.1-x64.exe`. O build baixa as versões fixadas em `desktop/windows/runtime-lock.json`, verifica seus hashes, usa o lockfile npm e gera o aplicativo e o instalador Inno Setup. O teste `ClaudeTUI-Terminal.exe --self-check` verifica a distribuição; `--smoke-test` também executa as ferramentas incluídas e o ciclo de vida da API em processo, sem chamar provedores.
+O resultado fica em `dist/ClaudeTUI-Setup-0.3.0-x64.exe`. O build baixa as versões fixadas em `desktop/windows/runtime-lock.json`, verifica seus hashes, usa o lockfile npm e gera o aplicativo e o instalador Inno Setup. O teste `ClaudeTUI-Terminal.exe --self-check` verifica a distribuição; `--smoke-test` também executa as ferramentas incluídas e o ciclo de vida da API em processo, sem chamar provedores.
 
 O serviço usa apenas o endereço local. Configurações continuam em `~/.fcc`; ferramentas gerenciadas e preferências do aplicativo ficam em `%LOCALAPPDATA%/ClaudeTUI`. Atualizações do instalador substituem o aplicativo e preservam esses dados.
 

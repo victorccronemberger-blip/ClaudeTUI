@@ -1,5 +1,6 @@
 """Clean Claude defaults preserve explicit native options and the FCC gateway."""
 
+import json
 import os
 
 import pytest
@@ -29,7 +30,11 @@ def test_explicit_permission_selection_overrides_clean_default(
     assert command[0] == "claude"
     if args:
         assert command[-len(args) :] == args
-    assert "--safe-mode" in command
+    assert "--bare" not in command and "--safe-mode" not in command
+    assert command[command.index("--setting-sources") + 1] == ""
+    assert (
+        json.loads(command[command.index("--settings") + 1])["disableAllHooks"] is True
+    )
     assert command[command.index("--system-prompt") + 1] == CLEAN_SYSTEM_PROMPT
     assert command[command.index("--system-prompt-snapshot") + 1] == "off"
     explicit_permission = args and args[0].startswith(
@@ -89,6 +94,30 @@ def test_explicit_bare_mode_uses_only_the_gateway_key(launch_capture):
     assert "--safe-mode" not in command
     assert command.count("--bare") == 1
     assert launch_capture.environments[0]["ANTHROPIC_API_KEY"] == "launcher-test-token"
+    assert "--agents" not in command
+
+
+def test_default_launch_registers_discovered_model_agents(launch_capture):
+    launch("claude", [])
+    command = launch_capture.commands[0]
+    agents = json.loads(command[command.index("--agents") + 1])
+    assert any(
+        value["model"].endswith("/nvidia_nim/catalog-model:variant")
+        for value in agents.values()
+    )
+    assert "--strict-mcp-config" in command
+    assert launch_capture.environments[0]["CLAUDE_CODE_DISABLE_CLAUDE_MDS"] == "1"
+
+
+def test_explicit_agent_definitions_and_safe_mode_are_preserved(launch_capture):
+    definitions = '{"mine":{"description":"Mine","prompt":"Mine","model":"inherit"}}'
+    launch("claude", ["--agents", definitions])
+    assert launch_capture.commands[0].count("--agents") == 1
+    assert definitions in launch_capture.commands[0]
+    launch_capture.commands.clear()
+    launch("claude", ["--safe-mode"])
+    assert "--agents" not in launch_capture.commands[0]
+    assert "--bare" not in launch_capture.commands[0]
 
 
 def test_native_mode_preserves_original_launch(launch_capture, monkeypatch):

@@ -1,5 +1,5 @@
 {
-  "version": "0.2.1",
+  "version": "0.3.0",
   "node": {
     "version": "26.13.0",
     "url": "https://nodejs.org/dist/v26.13.0/node-v26.13.0-win-x64.zip",

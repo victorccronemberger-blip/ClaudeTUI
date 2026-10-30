@@ -233,3 +233,21 @@ def test_missing_antigravity_is_installed_from_verified_pinned_binary(
     runtime.install_tools(lambda _: None)
     assert runtime.tool_path("antigravity").read_bytes() == b"native-google"
     assert runtime.tools_ready()
+
+
+def test_terminal_forwards_native_arguments_through_gateway_launcher(monkeypatch):
+    from free_claude_code.cli.launchers import claude, common
+    from free_claude_code.harnesses.launch import PreparedLaunch
+
+    monkeypatch.setattr(runtime, "configure_environment", lambda: None)
+    monkeypatch.setattr(runtime, "tools_ready", lambda: True)
+    monkeypatch.setattr(control, "ensure_service", lambda: None)
+    monkeypatch.setattr(runtime, "tool_path", lambda _name: "claude")
+    prepare = MagicMock(return_value=PreparedLaunch(["claude", "-p", "check"], {}))
+    execute = MagicMock()
+    monkeypatch.setattr(claude, "_configure", prepare)
+    monkeypatch.setattr(common, "run_client_process", execute)
+    args = ["-p", "check", "--model", "anthropic/drael/drael-v1"]
+    control.launch_terminal(args)
+    assert prepare.call_args.args[1] == args
+    assert execute.call_args.kwargs["command"] == ["claude", "-p", "check"]

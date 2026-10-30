@@ -1,11 +1,17 @@
 """Launch Claude with a minimal prompt and the FCC gateway connection."""
 
+import json
 from collections.abc import Sequence
 
 from free_claude_code.harnesses.claude import CLAUDE_BINARY_NAME, build_claude_proxy_env
+from free_claude_code.harnesses.claude_agents import (
+    DELEGATION_PROMPT,
+    model_agents_json,
+)
 from free_claude_code.harnesses.launch import PreparedLaunch
 from free_claude_code.harnesses.resources import LaunchResources
 
+from .catalog_http import fetch_proxy_model_catalog
 from .runner import HarnessSpec, LaunchContext, launch_harness
 
 CLEAN_SYSTEM_PROMPT = (
@@ -13,7 +19,8 @@ CLEAN_SYSTEM_PROMPT = (
     "Carry out the user's requests using the available tools. "
     "Inspect relevant files before making changes, preserve unrelated work, "
     "and verify results. Be direct and report what you actually did. "
-    "Ask a concise question only when essential information is missing."
+    "Ask a concise question only when essential information is missing. "
+    + DELEGATION_PROMPT
 )
 
 
@@ -27,7 +34,17 @@ def _clean_arguments(args: list[str]) -> list[str]:
     options = _native_options(args)
     defaults: list[str] = []
     if not options.intersection({"--bare", "--safe-mode"}):
-        defaults.append("--safe-mode")
+        if "--setting-sources" not in options:
+            defaults.extend(["--setting-sources", ""])
+        if "--settings" not in options:
+            defaults.extend(
+                [
+                    "--settings",
+                    json.dumps({"disableAllHooks": True, "autoMemoryEnabled": False}),
+                ]
+            )
+        if "--mcp-config" not in options and "--strict-mcp-config" not in options:
+            defaults.append("--strict-mcp-config")
     if not options.intersection({"--system-prompt", "--system-prompt-file"}):
         defaults.extend(["--system-prompt", CLEAN_SYSTEM_PROMPT])
     # Resumed conversations must not retain a previously recorded system prompt.
@@ -62,6 +79,16 @@ def _configure(
     )
     if _clean_mode(ctx):
         args = _clean_arguments(args)
+        options = _native_options(args)
+        if not options.intersection({"--safe-mode", "--bare"}):
+            env["CLAUDE_CODE_DISABLE_CLAUDE_MDS"] = "1"
+            if not options.intersection(
+                {"--agents", "--help", "-h", "--version", "-v"}
+            ):
+                catalog = ctx.catalog or fetch_proxy_model_catalog(
+                    ctx.proxy_root_url, ctx.auth_token, view="messages"
+                )
+                args = ["--agents", model_agents_json(catalog), *args]
         if "--bare" in _native_options(args):
             # Explicit bare mode needs an API key. Use only the FCC-local token.
             env["ANTHROPIC_API_KEY"] = ctx.auth_token
