@@ -275,6 +275,9 @@ class Settings(BaseModel):
     gemini_cli_path: OptionalNonEmptyString = Field(
         default=None, validation_alias="GEMINI_CLI_PATH"
     )
+    antigravity_cli_path: OptionalNonEmptyString = Field(
+        default=None, validation_alias="ANTIGRAVITY_CLI_PATH"
+    )
 
     # ==================== Google Vertex AI ====================
     vertex_project_id: OptionalNonEmptyString = Field(

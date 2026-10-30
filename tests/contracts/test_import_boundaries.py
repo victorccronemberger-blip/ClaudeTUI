@@ -20,6 +20,7 @@ ALLOWED_PACKAGE_DEPENDENCIES: dict[str, set[str]] = {
     "api": {"application", "config", "core"},
     "harnesses": {"application", "config", "core"},
     "cli": {"application", "config", "core", "harnesses"},
+    "windows_app": {"api", "cli", "config", "core", "harnesses", "runtime"},
     "runtime": {
         "api",
         "application",

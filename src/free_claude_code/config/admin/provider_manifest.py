@@ -377,6 +377,15 @@ def provider_field_specs() -> tuple[ConfigFieldSpec, ...]:
         *_cloudflare_account_field_specs(),
         *_vertex_field_specs(),
         ConfigFieldSpec(
+            key="ANTIGRAVITY_CLI_PATH",
+            label="Antigravity CLI Executable",
+            section_id="providers",
+            settings_attr="antigravity_cli_path",
+            provider_ids=("google_account",),
+            restart_required=True,
+            description="Uses your Google account through the official Antigravity CLI (Free, AI Pro or Ultra, subject to Google eligibility). Detects the Windows user installation automatically. Connecting validates a real answer before enabling models. Native sign-in stays in Google's keyring. This bridge accepts text and caller-owned MCP tools; disconnecting ClaudeTUI does not sign out Antigravity. Additional AI credits stay disabled for these requests.",
+        ),
+        ConfigFieldSpec(
             key="GEMINI_CLI_PATH",
             label="Gemini CLI Executable",
             section_id="providers",

@@ -403,6 +403,15 @@ PROVIDER_CATALOG: dict[str, ProviderDescriptor] = {
             "azure_openai_base_url",
         ),
     ),
+    "google_account": ProviderDescriptor(
+        provider_id="google_account",
+        display_name="Google / Gemini (Antigravity)",
+        website_url="https://antigravity.google/",
+        logo_filename="gemini-color.svg",
+        auth_kind=ProviderAuthKind.CONNECTED_ACCOUNT,
+        static_credential="fcc-native-account",
+        default_base_url="http://google-account.invalid/v1",
+    ),
     "gemini_cli": ProviderDescriptor(
         provider_id="gemini_cli",
         display_name="Gemini CLI (legacy Google sign-in)",

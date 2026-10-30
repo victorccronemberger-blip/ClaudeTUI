@@ -29,6 +29,7 @@ _EXPECTED_PROVIDER_ORDER: tuple[str, ...] = (
     "zenmux",
     "wandb",
     "azure_openai",
+    "google_account",
     "gemini_cli",
     "gemini",
     "vertex",

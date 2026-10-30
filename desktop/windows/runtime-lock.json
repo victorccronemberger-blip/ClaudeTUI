@@ -1,11 +1,13 @@
 {
-  "version": "0.1.2",
+  "version": "0.2.0",
   "node": {
     "version": "26.13.0",
     "url": "https://nodejs.org/dist/v26.13.0/node-v26.13.0-win-x64.zip",
     "sha256": "dcc60d59a0746999f99064a01c020445d54d84228c691cdbf25b49ac3b59150a"
   },
-  "gemini": {"version": "0.66.0"},
+  "gemini": {
+    "version": "0.66.0"
+  },
   "claude": {
     "version": "2.1.314",
     "url": "https://registry.npmjs.org/@anthropic-ai/claude-code-win32-x64/-/claude-code-win32-x64-2.1.314.tgz",
@@ -20,5 +22,10 @@
     "version": "6.7.4",
     "url": "https://github.com/jrsoftware/issrc/releases/download/is-6_7_4/innosetup-6.7.4.exe",
     "sha256": "a549929319f9120716677c685535ca4671e4b937b5fdc87e2585f32d8eb30e8c"
+  },
+  "antigravity": {
+    "version": "1.4.12",
+    "url": "https://storage.googleapis.com/antigravity-public/antigravity-cli/1.4.12-4768735748292608/windows-x64/cli_windows_x64.exe",
+    "sha512_base64": "b0Qpmzsvjds0nx4hvweWLGAqEXrbYtfoGksEHt4gZ+x37SYFn4Y2y5QpW/yd2fjKm/nKT0tBWe5hcaF6CCxAgg=="
   }
 }

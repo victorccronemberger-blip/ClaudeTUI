@@ -39,13 +39,29 @@ def manifest() -> dict:
 
 
 def tool_path(name: str) -> Path:
+    if name == "antigravity":
+        # Let the user's official installation and updater stay in control.
+        installed = (
+            Path(os.environ.get("LOCALAPPDATA", Path.home() / "AppData/Local"))
+            / "agy/bin/agy.exe"
+        )
+        if installed.is_file():
+            return installed
     version = manifest()[name]["version"]
     root = user_dir() / "runtime" / f"{name}-{version}"
-    return root / ("claude.exe" if name == "claude" else "bin/bash.exe")
+    return (
+        root
+        / {"claude": "claude.exe", "git": "bin/bash.exe", "antigravity": "agy.exe"}[
+            name
+        ]
+    )
 
 
 def tools_ready() -> bool:
-    return all(tool_path(name).is_file() for name in ("claude", "git"))
+    names = ["claude", "git"]
+    if "antigravity" in manifest():
+        names.append("antigravity")
+    return all(tool_path(name).is_file() for name in names)
 
 
 def verify_file(path: Path, spec: dict) -> None:
@@ -107,13 +123,21 @@ def install_tools(
             "Outra janela está preparando as ferramentas. Tente novamente."
         )
     try:
-        for name in ("claude", "git"):
+        names = ["claude", "git"]
+        if "antigravity" in manifest():
+            names.append("antigravity")
+        for name in names:
             if cancel is not None and cancel.is_set():
                 raise InterruptedError("Preparação cancelada.")
             if tool_path(name).is_file():
                 continue
             spec = manifest()[name]
-            progress(f"Preparando {'Claude Code' if name == 'claude' else 'Git'}…")
+            label = {
+                "claude": "Claude Code",
+                "git": "Git",
+                "antigravity": "Antigravity",
+            }[name]
+            progress(f"Preparando {label}…")
             archive = root / "downloads" / Path(spec["url"]).name
             download_verified(spec, archive, progress, cancel)
             # TemporaryDirectory owns and removes only its freshly created subtree.
@@ -128,6 +152,8 @@ def install_tools(
                             raise ValueError("Pacote do Claude Code inválido.")
                         with source, (staging / "claude.exe").open("wb") as output:
                             shutil.copyfileobj(source, output)
+                elif name == "antigravity":
+                    shutil.copy2(archive, staging / "agy.exe")
                 else:
                     process = subprocess.Popen(
                         [str(archive), f"-o{staging}", "-y", "-gm2"],
@@ -154,8 +180,13 @@ def install_tools(
                         if process.poll() is None:
                             process.kill()
                         process.wait()
-                expected = staging / (
-                    "claude.exe" if name == "claude" else "bin/bash.exe"
+                expected = (
+                    staging
+                    / {
+                        "claude": "claude.exe",
+                        "git": "bin/bash.exe",
+                        "antigravity": "agy.exe",
+                    }[name]
                 )
                 if not expected.is_file():
                     raise ValueError(f"Pacote {name} incompleto.")
@@ -184,6 +215,7 @@ def configure_environment() -> None:
         / "runtime/gemini/node_modules/@google/gemini-cli/bundle/gemini.js"
     )
     os.environ["GEMINI_CLI_PATH"] = str(gemini)
+    os.environ.setdefault("ANTIGRAVITY_CLI_PATH", str(tool_path("antigravity")))
     git = tool_path("git").parent.parent
     os.environ["PATH"] = os.pathsep.join(
         [str(node), str(git / "cmd"), str(git / "usr/bin"), os.environ.get("PATH", "")]
@@ -194,12 +226,13 @@ def configure_environment() -> None:
 def diagnostics() -> dict:
     from free_claude_code.api.app import create_app
     from free_claude_code.cli.desktop_assets import app_icon_bytes
-    from free_claude_code.core.version import package_version
+    from free_claude_code.core.version import UPSTREAM_BASE_VERSION, package_version
 
     checks = {
         "frozen": bool(getattr(sys, "frozen", False)),
         "version": manifest()["version"],
         "proxy_version": package_version(),
+        "upstream_version": UPSTREAM_BASE_VERSION,
         "api_import": callable(create_app),
         "icon": len(app_icon_bytes(".ico")) > 0,
         "node": (resources_dir() / "runtime/node/node.exe").is_file(),

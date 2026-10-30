@@ -12,6 +12,7 @@ from tkinter import filedialog, messagebox, ttk
 
 from free_claude_code.config.loader import get_settings
 from free_claude_code.config.server_urls import local_admin_url
+from free_claude_code.core.version import UPSTREAM_BASE_VERSION
 
 from .control import (
     ensure_service,
@@ -158,7 +159,7 @@ class ControlCenter:
         ).pack(side="left")
         ttk.Label(
             footer,
-            text=f"v{manifest()['version']}",
+            text=f"v{manifest()['version']} · FCC {UPSTREAM_BASE_VERSION}",
             style="Muted.TLabel",
             font=("Segoe UI", 9),
         ).pack(side="right")

@@ -47,6 +47,8 @@ def run() -> None:
     }
     if tool_path("claude").is_file():
         commands["claude"] = [str(tool_path("claude")), "--version"]
+    if tool_path("antigravity").is_file():
+        commands["antigravity"] = [str(tool_path("antigravity")), "--version"]
     if tool_path("git").is_file():
         commands["bash"] = [str(tool_path("git")), "--version"]
         commands["git_in_bash"] = [str(tool_path("git")), "-c", "git --version"]

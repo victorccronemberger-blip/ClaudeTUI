@@ -23,6 +23,8 @@ from free_claude_code.messaging.voice import Transcriber
 from free_claude_code.providers.base import BaseProvider, ProviderConfig
 from free_claude_code.providers.gemini_cli.auth import GeminiCLIAuthManager
 from free_claude_code.providers.github_copilot.auth import CopilotAuthManager
+from free_claude_code.providers.native_accounts.auth import NativeAccountAuthManager
+from free_claude_code.providers.native_accounts.google import GoogleAccountEngine
 from free_claude_code.providers.openai_codex.auth import OpenAIAuthManager
 from free_claude_code.providers.runtime.runtime import ProviderRuntime, create_provider
 
@@ -55,15 +57,21 @@ def build_asgi_app(
     openai_auth = OpenAIAuthManager(proxy=settings.openai_proxy)
     copilot_auth = CopilotAuthManager()
     gemini_auth = GeminiCLIAuthManager(executable=settings.gemini_cli_path)
+    google_engine = GoogleAccountEngine(executable=settings.antigravity_cli_path)
+    google_auth = NativeAccountAuthManager(google_engine)
     copilot_factory = partial(_load_copilot_provider, auth=copilot_auth)
     openai_factory = partial(_load_openai_provider, auth=openai_auth)
     gemini_factory = partial(_load_gemini_cli_provider, auth=gemini_auth)
+    google_factory = partial(
+        _load_google_account_provider, auth=google_auth, engine=google_engine
+    )
     provider_constructor = partial(
         create_provider,
         provider_loaders={
             "openai": openai_factory,
             "github_copilot": copilot_factory,
             "gemini_cli": gemini_factory,
+            "google_account": google_factory,
         },
     )
     runtime_factory = partial(
@@ -77,6 +85,7 @@ def build_asgi_app(
             *openai_auth.connected_provider_ids(),
             *copilot_auth.connected_provider_ids(),
             *gemini_auth.connected_provider_ids(),
+            *google_auth.connected_provider_ids(),
         ),
         model_catalog_publisher=CodexModelCatalogPublisher(),
     )
@@ -99,6 +108,7 @@ def build_asgi_app(
             "openai": openai_auth,
             "github_copilot": copilot_auth,
             "gemini_cli": gemini_auth,
+            "google_account": google_auth,
         },
     )
     services = ApiServices(
@@ -133,6 +143,25 @@ def _load_gemini_cli_provider(*, auth: GeminiCLIAuthManager) -> ProviderFactory:
         admission: ProviderAdmissionController,
     ) -> BaseProvider:
         return GeminiCLIProvider(config, auth=auth, admission=admission)
+
+    return construct
+
+
+def _load_google_account_provider(
+    *, auth: NativeAccountAuthManager, engine: GoogleAccountEngine
+) -> ProviderFactory:
+    from free_claude_code.providers.native_accounts.provider import (
+        GoogleAccountProvider,
+    )
+
+    def construct(
+        config: ProviderConfig,
+        _settings: Settings,
+        admission: ProviderAdmissionController,
+    ) -> BaseProvider:
+        return GoogleAccountProvider(
+            config, auth=auth, engine=engine, admission=admission
+        )
 
     return construct
 

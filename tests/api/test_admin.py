@@ -246,7 +246,7 @@ def test_admin_page_uses_installed_version(monkeypatch, tmp_path):
     response = _local_client(create_test_app()).get("/admin")
 
     assert response.status_code == 200
-    assert "<p>Server Control · v9.8.7</p>" in response.text
+    assert "<p>App v9.8.7 · FCC v6.18.5</p>" in response.text
     assert 'href="https://github.com/Alishahryar1/free-claude-code"' in response.text
     assert 'target="_blank"' in response.text
     assert 'rel="noopener noreferrer"' in response.text

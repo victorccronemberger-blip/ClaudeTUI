@@ -9,7 +9,7 @@ import httpx2
 
 from free_claude_code.application.errors import ApplicationUnavailableError
 from free_claude_code.config.model_refs import configured_chat_model_refs
-from free_claude_code.config.provider_catalog import PROVIDER_CATALOG
+from free_claude_code.config.provider_catalog import PROVIDER_CATALOG, ProviderAuthKind
 from free_claude_code.config.settings import Settings
 from free_claude_code.core.failures import ExecutionFailure, FailureKind
 from free_claude_code.providers.model_listing import ModelListResponseError
@@ -118,7 +118,8 @@ def model_cache_provider_ids_for_settings(
     configured = tuple(
         provider_id
         for provider_id, descriptor in PROVIDER_CATALOG.items()
-        if has_provider_configuration(descriptor, settings)
+        if descriptor.auth_kind is not ProviderAuthKind.CONNECTED_ACCOUNT
+        and has_provider_configuration(descriptor, settings)
     )
     available = set(configured) | set(connected_provider_ids)
     return tuple(

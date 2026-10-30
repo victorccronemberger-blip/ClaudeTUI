@@ -30,7 +30,7 @@ from free_claude_code.config.provider_catalog import (
     ProviderAuthKind,
 )
 from free_claude_code.core.json_types import JsonObject, JsonValue
-from free_claude_code.core.version import package_version
+from free_claude_code.core.version import UPSTREAM_BASE_VERSION, package_version
 
 from .admin_security import require_loopback_admin
 from .dependencies import get_services
@@ -104,7 +104,9 @@ def _asset_response(filename: str) -> FileResponse:
 def admin_page_response() -> HTMLResponse:
     template = _asset_path("index.html").read_text(encoding="utf-8")
     return HTMLResponse(
-        template.replace(_ADMIN_ASSET_VERSION_PLACEHOLDER, package_version())
+        template.replace(_ADMIN_ASSET_VERSION_PLACEHOLDER, package_version()).replace(
+            "__FCC_UPSTREAM_VERSION__", UPSTREAM_BASE_VERSION
+        )
     )
 
 

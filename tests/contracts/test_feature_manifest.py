@@ -7,11 +7,13 @@ from free_claude_code.providers.base import BaseProvider
 from free_claude_code.providers.cloudflare import CloudflareProvider
 from free_claude_code.providers.deepseek import DeepSeekProvider
 from free_claude_code.providers.gemini import GeminiProvider
+from free_claude_code.providers.gemini_cli.provider import GeminiCLIProvider
 from free_claude_code.providers.github_copilot.provider import GitHubCopilotProvider
 from free_claude_code.providers.groq import GroqProvider
 from free_claude_code.providers.kilo import KiloProvider
 from free_claude_code.providers.lmstudio import LMStudioProvider
 from free_claude_code.providers.mistral import MistralProvider
+from free_claude_code.providers.native_accounts.provider import GoogleAccountProvider
 from free_claude_code.providers.nvidia_nim import NvidiaNimProvider
 from free_claude_code.providers.open_router import OpenRouterProvider
 from free_claude_code.providers.openai_api import OpenAIAPIProvider
@@ -21,6 +23,7 @@ from free_claude_code.providers.openai_chat import (
 )
 from free_claude_code.providers.openai_codex.provider import OpenAICodexProvider
 from free_claude_code.providers.opencode import OpenCodeProvider
+from free_claude_code.providers.qwencloud_api import QwenCloudAPIProvider
 from free_claude_code.providers.vertex import VertexProvider
 from smoke.features import FEATURE_INVENTORY
 
@@ -85,6 +88,9 @@ def test_provider_and_platform_registries_include_builtins() -> None:
         "lmstudio": LMStudioProvider,
         "groq": GroqProvider,
         "gemini": GeminiProvider,
+        "gemini_cli": GeminiCLIProvider,
+        "google_account": GoogleAccountProvider,
+        "qwencloud_api": QwenCloudAPIProvider,
         "vertex": VertexProvider,
     }
     assert set(OPENAI_CHAT_PROFILES).isdisjoint(specialized_provider_classes)

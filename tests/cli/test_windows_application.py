@@ -196,3 +196,40 @@ def test_cancel_during_extraction_waits_for_child_and_leaves_no_published_git(
     assert not runtime.tool_path("git").exists()
     assert claude.read_bytes() == b"existing-version"
     assert not list((tmp_path / "runtime").glob(".git-*"))
+
+
+def test_official_user_antigravity_installation_is_preferred(monkeypatch, tmp_path):
+    monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
+    installed = tmp_path / "agy/bin/agy.exe"
+    installed.parent.mkdir(parents=True)
+    installed.write_bytes(b"official-user-install")
+    assert runtime.tool_path("antigravity") == installed
+
+
+def test_missing_antigravity_is_installed_from_verified_pinned_binary(
+    monkeypatch, tmp_path
+):
+    monkeypatch.setenv("LOCALAPPDATA", str(tmp_path / "Local"))
+    monkeypatch.setattr(runtime, "user_dir", lambda: tmp_path / "managed")
+    config = {name: {"version": "1"} for name in ("claude", "git")}
+    config["antigravity"] = {
+        "version": "1",
+        "url": "https://official.example/agy.exe",
+        "sha256": hashlib.sha256(b"native-google").hexdigest(),
+    }
+    monkeypatch.setattr(runtime, "manifest", lambda: config)
+    for name in ("claude", "git"):
+        path = runtime.tool_path(name)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(b"existing")
+
+    def verified(spec, destination, *_args):
+        destination.parent.mkdir(parents=True)
+        destination.write_bytes(b"native-google")
+        runtime.verify_file(destination, spec)
+
+    monkeypatch.setattr(runtime, "download_verified", verified)
+    assert not runtime.tools_ready()
+    runtime.install_tools(lambda _: None)
+    assert runtime.tool_path("antigravity").read_bytes() == b"native-google"
+    assert runtime.tools_ready()
