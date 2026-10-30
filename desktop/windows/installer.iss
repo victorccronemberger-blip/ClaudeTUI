@@ -1,5 +1,5 @@
 #ifndef AppVersion
-  #define AppVersion "0.1.1"
+  #define AppVersion "0.1.2"
 #endif
 #ifndef AppSource
   #define AppSource "..\..\dist\windows\" + AppVersion + "\ClaudeTUI"
@@ -38,9 +38,10 @@ Source: "{#AppSource}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs 
 Source: "..\..\LICENSE"; DestDir: "{app}"
 
 [InstallDelete]
-; Remove only the obsolete distribution metadata installed by version 0.1.0.
+; Remove only obsolete distribution metadata installed by earlier app versions.
 ; Leaving two versions makes importlib.metadata report the old server version.
 Type: filesandordirs; Name: "{app}\_internal\free_claude_code-0.1.0.dist-info"
+Type: filesandordirs; Name: "{app}\_internal\free_claude_code-0.1.1.dist-info"
 
 [Icons]
 Name: "{autodesktop}\ClaudeTUI"; Filename: "{app}\ClaudeTUI.exe"; WorkingDir: "{app}"

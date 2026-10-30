@@ -302,8 +302,9 @@ async def test_model_discovery_uses_codex_compatibility_not_product_version(
 
     assert {info.model_id for info in infos} == {"gpt-visible"}
     assert len(requests) == 1
-    assert requests[0].headers["version"] == package_version
-    assert requests[0].headers["user-agent"] == f"codex_cli_rs/{package_version}"
+    assert requests[0].headers["version"] == "0.163.0"
+    assert requests[0].headers["user-agent"] == "codex_cli_rs/0.163.0"
+    assert requests[0].headers["x-fcc-version"] == package_version
 
 
 @pytest.mark.parametrize(
@@ -393,6 +394,11 @@ async def test_provider_uses_subscription_headers_and_visible_model_catalog() ->
     assert response_request.headers["authorization"] == "Bearer access_1"
     assert response_request.headers["chatgpt-account-id"] == "account_1"
     assert response_request.headers["originator"] == "codex_cli_rs"
+    assert response_request.headers["version"] == "0.163.0"
+    assert response_request.headers["user-agent"] == "codex_cli_rs/0.163.0"
+    assert (
+        response_request.headers["x-fcc-version"] == codex_provider_module.FCC_VERSION
+    )
     assert response_request.headers["accept"] == "text/event-stream"
     assert response_request.headers["session_id"]
     payload = json.loads(response_request.content)

@@ -47,7 +47,7 @@ except PackageNotFoundError:
 # independently numbered releases (for example 0.1.0) are not Codex versions:
 # using them here returns HTTP 200 with an empty catalog for a connected account.
 # Keep this tested catalog compatibility version separate from product metadata.
-OPENAI_CODEX_CATALOG_VERSION = "0.163.0"
+OPENAI_CODEX_COMPATIBILITY_VERSION = "0.163.0"
 
 
 class OpenAICodexProvider(BaseProvider):
@@ -65,9 +65,10 @@ class OpenAICodexProvider(BaseProvider):
         self._auth = auth
         self._admission = admission
         self._client_headers = {
-            "User-Agent": f"{OPENAI_CODEX_ORIGINATOR}/{FCC_VERSION}",
+            "User-Agent": f"{OPENAI_CODEX_ORIGINATOR}/{OPENAI_CODEX_COMPATIBILITY_VERSION}",
             "originator": OPENAI_CODEX_ORIGINATOR,
-            "version": FCC_VERSION,
+            "version": OPENAI_CODEX_COMPATIBILITY_VERSION,
+            "X-FCC-Version": FCC_VERSION,
         }
         self._pool = (
             transport
@@ -136,7 +137,9 @@ class OpenAICodexProvider(BaseProvider):
                         "models",
                         cast_to=object,
                         options={
-                            "params": {"client_version": OPENAI_CODEX_CATALOG_VERSION}
+                            "params": {
+                                "client_version": OPENAI_CODEX_COMPATIBILITY_VERSION
+                            }
                         },
                     )
                     await attempt.accept()

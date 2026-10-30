@@ -6,7 +6,7 @@ Distribuição Windows em fase de teste.
 
 ## Instalar e usar
 
-1. Baixe **ClaudeTUI-Setup-0.1.1-x64.exe** em [Releases](https://github.com/victorccronemberger-blip/ClaudeTUI/releases).
+1. Baixe **ClaudeTUI-Setup-0.1.2-x64.exe** em [Releases](https://github.com/victorccronemberger-blip/ClaudeTUI/releases).
 2. Execute o instalador e abra **ClaudeTUI** pelo atalho da área de trabalho ou menu Iniciar.
 3. Em **Provedores e modelos**, conecte sua conta ou informe sua chave, selecione o modelo e clique em **Apply**.
 4. Escolha a pasta do projeto na janela inicial e clique em **Abrir terminal**.
@@ -35,7 +35,7 @@ uv sync --locked --group windows-build
 uv run --no-sync python scripts/build_windows.py
 ```
 
-O resultado fica em `dist/ClaudeTUI-Setup-0.1.1-x64.exe`. O build baixa as versões fixadas em `desktop/windows/runtime-lock.json`, verifica seus hashes, usa o lockfile npm e gera o aplicativo e o instalador Inno Setup. O teste `ClaudeTUI-Terminal.exe --self-check` verifica a distribuição; `--smoke-test` também executa as ferramentas incluídas e o ciclo de vida da API em processo, sem chamar provedores.
+O resultado fica em `dist/ClaudeTUI-Setup-0.1.2-x64.exe`. O build baixa as versões fixadas em `desktop/windows/runtime-lock.json`, verifica seus hashes, usa o lockfile npm e gera o aplicativo e o instalador Inno Setup. O teste `ClaudeTUI-Terminal.exe --self-check` verifica a distribuição; `--smoke-test` também executa as ferramentas incluídas e o ciclo de vida da API em processo, sem chamar provedores.
 
 O serviço usa apenas o endereço local. Configurações continuam em `~/.fcc`; ferramentas gerenciadas e preferências do aplicativo ficam em `%LOCALAPPDATA%/ClaudeTUI`. Atualizações do instalador substituem o aplicativo e preservam esses dados.
 
