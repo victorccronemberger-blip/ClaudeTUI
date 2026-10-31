@@ -192,6 +192,15 @@ def _apply_drael_request_quirks(
         body["tool_choice"] = "none"
 
 
+def _apply_qwencloud_request_quirks(
+    body: dict[str, Any], _request: MessagesRequest, _policy: ReasoningPolicy
+) -> None:
+    # The auto router rejects an explicit tool_choice, even the implicit default.
+    # Omission preserves automatic selection; never drop a forced caller choice.
+    if body.get("model") == "auto" and body.get("tool_choice") == "auto":
+        body.pop("tool_choice")
+
+
 _COHERE_EXTRA_BODY_KEYS = frozenset(
     {
         "frequency_penalty",
@@ -295,6 +304,7 @@ OPENAI_CHAT_PROFILES: dict[str, OpenAIChatProfile] = {
             default_max_tokens=ANTHROPIC_DEFAULT_MAX_OUTPUT_TOKENS,
         ),
         NO_REASONING,
+        postprocessors=(_apply_qwencloud_request_quirks,),
     ),
     "qwencloud_coding": OpenAIChatProfile(
         _policy(

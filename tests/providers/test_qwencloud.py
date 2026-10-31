@@ -43,6 +43,37 @@ def test_init_uses_openai_chat_provider(
     assert qwencloud_provider._provider_name == "QWENCLOUD"
 
 
+@pytest.mark.parametrize(
+    ("model", "choice", "expected"),
+    [
+        ("auto", {"type": "auto"}, None),
+        ("auto", {"type": "any"}, "required"),
+        ("qwen3.7-plus", {"type": "auto"}, "auto"),
+    ],
+)
+def test_auto_router_omits_only_default_tool_choice(
+    qwencloud_provider: OpenAIChatProvider, model, choice, expected
+) -> None:
+    request = MessagesRequest.model_validate(
+        {
+            "model": model,
+            "messages": [{"role": "user", "content": "Read the file."}],
+            "tools": [
+                {
+                    "name": "read_file",
+                    "input_schema": {"type": "object", "properties": {}},
+                }
+            ],
+            "tool_choice": choice,
+        }
+    )
+    body = qwencloud_provider._chat._build_request_body(
+        request, reasoning=reasoning_for(request)
+    )
+    assert body.get("tool_choice") == expected
+    assert body["tools"][0]["function"]["name"] == "read_file"
+
+
 def test_build_request_body_preserves_common_chat_tools_and_images(
     qwencloud_provider: OpenAIChatProvider,
 ) -> None:
